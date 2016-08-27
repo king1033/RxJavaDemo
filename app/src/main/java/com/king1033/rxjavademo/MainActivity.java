@@ -7,6 +7,8 @@ import android.view.View;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 
@@ -19,16 +21,63 @@ import rx.schedulers.Schedulers;
  * 4、建立观察者对象与被观察者对象之间的关联关系
  */
 public class MainActivity extends AppCompatActivity {
-    Subscriber<String>subscriber;
-    Observable<String>observable;
+    Subscriber<String> subscriber;
+    Observable<String> observable;
     private String TAG = "King1033";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-       // method1();
-        method2();
+        // method1();
+        // method2();
+        //method3();
+        //method4();
+    }
+
+    private void method4() {
+        Observable.create(new Observable.OnSubscribe<String>() {
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                subscriber.onNext("zhangsan");
+            }
+        }).map(new Func1<String, Object>() {
+            @Override
+            public Object call(String s) {
+                return s + ":lisi";
+            }
+        }).map(new Func1<Object, String>() {
+            @Override
+            public String call(Object o) {
+                return "----" + o;
+            }
+        }).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                Log.i(TAG, "call: " + s);
+            }
+        });
+    }
+
+
+    private void method3() {
+        Observable.just("zhangsan")
+                .subscribe(new Subscriber<String>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        Log.i(TAG, "onNext: " + s);
+                    }
+                });
     }
 
     private void method2() {
@@ -75,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNext(String s) {
-                Log.i(TAG, "subscriber ----->  onNext: "+Thread.currentThread().getName());
+                Log.i(TAG, "subscriber ----->  onNext: " + Thread.currentThread().getName());
 
             }
         };
@@ -90,10 +139,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void click(View view){
-       //关联
+    public void click(View view) {
+        //关联
         observable.subscribeOn(Schedulers.newThread())
-                  .observeOn(Schedulers.newThread())//开启一个子线程
-                  .subscribe(subscriber);
+                .observeOn(Schedulers.newThread())//开启一个子线程
+                .subscribe(subscriber);
     }
 }
